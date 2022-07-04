@@ -47,12 +47,13 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [{squares: Array(9).fill(null)}],
+      stepNumber: 0,
       xIsNext: true,
     }
   }
 
   handleClick(i) {
-    const history = this.state.history;
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice()
     // 已经有子 或者游戏结束时 直接返回
@@ -62,14 +63,31 @@ class Game extends React.Component {
     squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       history: history.concat([{squares: squares}]),
+      stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
     })
   };
 
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0,
+    });
+  }
+
   render() {
+    // 在 jump 后未落子时，history是不会清理的 按照stepNumber渲染当前棋盘
     const history = this.state.history;
-    const current = history[history.length - 1];
+    const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
+
+    const moves = history.map((move, step) => {
+      const desc = step ? 'Go to move #' + step : 'Go to game start';
+      return (<li key={step}>
+        <button onClick={() => this.jumpTo(step)}>{desc}</button>
+      </li>);
+    })
+
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
@@ -87,7 +105,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
