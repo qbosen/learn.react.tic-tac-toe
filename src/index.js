@@ -47,6 +47,7 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
+      historyOrderAsc: true,
     }
   }
 
@@ -76,6 +77,12 @@ class Game extends React.Component {
     });
   }
 
+  changeHistoryOrder() {
+    this.setState({
+      historyOrderAsc: !this.state.historyOrderAsc,
+    });
+  }
+
   render() {
     // 在 jump 后未落子时，history是不会清理的 按照stepNumber渲染当前棋盘
     const history = this.state.history;
@@ -97,6 +104,10 @@ class Game extends React.Component {
           <button onClick={() => this.jumpTo(step)}>{desc}</button>
         </li>);
     })
+    if (!this.state.historyOrderAsc) {
+      // in place reverse
+      moves.reverse()
+    }
 
     let status;
     if (winner) {
@@ -115,6 +126,9 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <div>History display in:
+            <button onClick={() => this.changeHistoryOrder()}>{this.state.historyOrderAsc ? 'asc' : 'desc'}</button>
+          </div>
           <ol>{moves}</ol>
         </div>
       </div>
