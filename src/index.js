@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 function Square(props) {
+  const styleClass = props.isWinner ? "square square-winner" : "square";
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={styleClass} onClick={props.onClick}>
       {props.value}
     </button>
   );
@@ -16,6 +17,7 @@ class Board extends React.Component {
     return <Square
       key={"square" + i}
       value={this.props.squares[i]}
+      isWinner={this.props.winnerIdx.includes(i)}
       onClick={() => this.props.onClick(i)}
     />;
   }
@@ -56,7 +58,7 @@ class Game extends React.Component {
     const current = history[history.length - 1];
     const squares = current.squares.slice()
     // 已经有子 或者游戏结束时 直接返回
-    if (calculateWinner(squares) || squares[i]) {
+    if (calculateWinner(squares).winner || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
@@ -87,7 +89,7 @@ class Game extends React.Component {
     // 在 jump 后未落子时，history是不会清理的 按照stepNumber渲染当前棋盘
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const {winner, winnerIdx} = calculateWinner(current.squares);
 
     const moves = history.map((move, step) => {
       let desc;
@@ -121,6 +123,7 @@ class Game extends React.Component {
         <div className="game-board">
           <Board
             squares={current.squares}
+            winnerIdx={winnerIdx}
             onClick={(i) => this.handleClick(i)}
           />
         </div>
@@ -149,10 +152,13 @@ function calculateWinner(squares) {
   ];
   for (const [a, b, c] of winnerPattern) {
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        winner: squares[a],
+        winnerIdx: [a, b, c]
+      };
     }
   }
-  return null;
+  return {winner: null, winnerIdx: []};
 }
 
 // ========================================
